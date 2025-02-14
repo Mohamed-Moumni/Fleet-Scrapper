@@ -7,10 +7,10 @@ from os import getenv
 load_dotenv(dotenv_path=Path("../.env"))
 
 
-def dump_frame_tree(frame: Frame):
-    if frame.name == "frame_aint_d":
+def dump_frame_tree(frame: Frame, frame_name: str):
+    if frame.name == frame_name:
         return frame
-    frames = [dump_frame_tree(child) for child in frame.child_frames]
+    frames = [dump_frame_tree(child, frame_name) for child in frame.child_frames]
     frame_to_return = next((item for item in frames if item != None), None)
     return frame_to_return
 
