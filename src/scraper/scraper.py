@@ -130,6 +130,7 @@ class Scraper:
                 full_url = base_url + action_url
                 car_scraper = ScrapCars(full_url, form_data)
                 car_scrapped: Car = car_scraper.scrap()
+                print(car_scrapped)
 
     def start_scrap(self) -> None:
         """
