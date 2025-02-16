@@ -1,4 +1,3 @@
-from bs4 import BeautifulSoup
 from requests import Session, Response
 from typing import Dict
 from selectolax import parser
@@ -52,7 +51,7 @@ class ScrapCars:
             car: Car = self.car_specification()
             return car
         except Exception as e:
-            raise Exception("Scrap Car Page Error: {e}")
+            raise Exception(f"Scrap Car Page Error: {e}")
 
     def get_specification_table(self) -> None:
         tree = parser.HTMLParser(self.response)

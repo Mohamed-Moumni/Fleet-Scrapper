@@ -4,11 +4,18 @@ from dotenv import load_dotenv
 from pathlib import Path
 from bs4 import BeautifulSoup
 from os import getenv
-from typing import List, Dict
+from typing import List, Dict, Any
 from tqdm import tqdm
 from itertools import islice
 from time import sleep
 from car_spec import ScrapCars, Car
+from django_config import (
+    setup_django,
+    get_car_service,
+    get_make_service,
+    get_model_service,
+    get_sub_model_service,
+)
 
 load_dotenv(dotenv_path=Path("../.env"))
 
@@ -62,7 +69,9 @@ class Scraper:
         Args:
             makes (List[Dict[str, str]]): A list of car makes with their values.
         """
+        make_service = get_make_service()
         for make, _ in zip(makes, tqdm(range(len(makes)), desc="Makes Treated")):
+            make = make_service.create(make["value"].lower())
             self.main_frame.select_option("#a", make["value"])
             while self.main_frame.locator("#b > option:not([value='1'])").count() == 0:
                 self.page.wait_for_timeout(500)
@@ -74,10 +83,10 @@ class Scraper:
             )
             models.pop(0)
             filtered_models_by_year: List[str] = filter_models(models)
-            self.scrap_car_sub_models(filtered_models_by_year)
+            self.scrap_car_sub_models(filtered_models_by_year, make)
             sleep(0.05)
 
-    def scrap_car_sub_models(self, models: List[Dict[str, str]]) -> None:
+    def scrap_car_sub_models(self, models: List[str], make) -> None:
         """
         Scrapes available sub-models for each car model.
 
@@ -90,7 +99,9 @@ class Scraper:
         """
 
         self.get_model_cars_frame()
+        model_service = get_model_service()
         for model in models:
+            model_obj = model_service.create({"name": model.lower(), "make": make})
             self.main_frame.select_option("#b", model)
             while self.main_frame.locator("#c > option:not([value='1'])").count() == 0:
                 self.page.wait_for_timeout(500)
@@ -104,17 +115,30 @@ class Scraper:
                     }))"""
             )
             sub_models.pop(0)
+            sub_model_service = get_sub_model_service()
             for sub_model in sub_models:
-                self.scrap_car(sub_model)
+                sub_model_obj = sub_model_service.create(
+                    {"name": sub_model["value"].lower(), "model": model_obj}
+                )
+                car_data = {
+                    "make": make,
+                    "model": model_obj,
+                    "sub_model": sub_model_obj,
+                }
+                self.scrap_car(sub_model, car_data)
 
-    def scrap_car(self, sub_model: Dict[str, str]) -> None:
+    def scrap_car(self, sub_model: Dict[str, str], car_data: Dict[str, Any]) -> None:
         self.main_frame.select_option("#c", sub_model["value"])
         form = self.main_frame.locator("//form[@name='search_params1']")
         form.locator('input[type="submit"]').click()
+
         sleep(2)
+
         html_frame = self.car_frame.inner_html("html")
         soup = BeautifulSoup(str(html_frame), "html.parser")
         trs = soup.find_all("tr")
+        car_service = get_car_service()
+
         for tr in trs:
             tds = tr.find_all("td")
             spec, year = islice(tds, 0, 4, 3)
@@ -130,7 +154,8 @@ class Scraper:
                 full_url = base_url + action_url
                 car_scraper = ScrapCars(full_url, form_data)
                 car_scrapped: Car = car_scraper.scrap()
-                print(car_scrapped)
+                data = car_scrapped | car_data
+                car_service.create(**data)
 
     def start_scrap(self) -> None:
         """
@@ -149,5 +174,6 @@ class Scraper:
 
 
 if __name__ == "__main__":
+    setup_django()
     scrapper = Scraper(2024, ["name"])
     scrapper.start_scrap()

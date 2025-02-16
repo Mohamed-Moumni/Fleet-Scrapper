@@ -1,5 +1,5 @@
 from playwright.sync_api import Frame
-from typing import Dict,List
+from typing import Dict, List
 from dotenv import load_dotenv
 from pathlib import Path
 from os import getenv
@@ -15,8 +15,8 @@ def dump_frame_tree(frame: Frame, frame_name: str):
     return frame_to_return
 
 
-def filter_models(models:List[Dict[str, str]]):
-    filtred_models:List[str] = []
+def filter_models(models: List[Dict[str, str]]):
+    filtred_models: List[str] = []
     try:
         for model in models:
             if model["text"].find(";") > -1:
@@ -24,8 +24,10 @@ def filter_models(models:List[Dict[str, str]]):
                 start, end = year.split("-")
                 start = int(start) if start != "" else None
                 end = int(end) if end != "" else None
-                if start >= int(getenv("STARTING_SCRAP_YEAR")) or (end and int(getenv("STARTING_SCRAP_YEAR")) <= end):
-                    filtred_models.append(model['value'])
+                if start >= int(getenv("STARTING_SCRAP_YEAR")) or (
+                    end and int(getenv("STARTING_SCRAP_YEAR")) <= end
+                ):
+                    filtred_models.append(model["value"])
     except Exception as e:
-        raise ValueError("Error: error while filtering models : {e}")
+        raise ValueError(f"Error: error while filtering models : {e}")
     return filtred_models
