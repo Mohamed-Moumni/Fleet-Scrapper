@@ -13,8 +13,7 @@ import json
 def make_create_api(request):
     try:
         data = MakeSchema(**request.data)
-        make_service: MakeService = MakeService(data.name)
-        make: Make = make_service.create()
+        make: Make = MakeService.create(data.name)
         return Response(
             {
                 "message": "Make created successfully",

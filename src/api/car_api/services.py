@@ -4,11 +4,12 @@ from .models import Car, Make, Model, SubModel
 
 
 class MakeService:
-    def __init__(self, name: str):
-        self.name = name
+    def __init__(self):
+        pass
 
-    def create(self):
-        new_make: Make = Make.objects.create(name=self.name)
+    @staticmethod
+    def create(name: str):
+        new_make, created = Make.objects.get_or_create(name=name)
         return new_make
 
 
@@ -16,8 +17,9 @@ class ModelService:
     def __init__(self):
         pass
 
-    def create(self, name: str):
-        new_model: Model = Model.objects.create(name)
+    @staticmethod
+    def create(**kwargs):
+        new_model, created = Model.objects.get_or_create(**kwargs)
         return new_model
 
 
@@ -25,8 +27,9 @@ class SubModelService:
     def __init__(self):
         pass
 
-    def create(self, **kwargs):
-        new_sub_model: SubModel = SubModel.objects.create(**kwargs)
+    @staticmethod
+    def create(**kwargs):
+        new_sub_model, created = SubModel.objects.get_or_create(**kwargs)
         return new_sub_model
 
 
@@ -36,7 +39,7 @@ class CarService:
 
     @transaction.atomic
     def create(self, **kwargs):
-        new_car: Car = Car.objects.create(**kwargs)
+        new_car, created = Car.objects.get_or_create(**kwargs)
         return new_car
 
     def get_by_filter(self, **filters):

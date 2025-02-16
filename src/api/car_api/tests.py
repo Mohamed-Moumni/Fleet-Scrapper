@@ -1,25 +1,69 @@
-import pytest
 from django.test import TestCase
-from .services import MakeService
-from .models import Make
-from django.core.exceptions import ValidationError
+from .services import MakeService, ModelService, SubModelService, CarService
 
 
-@pytest.mark.django_db
-class TestMakeService(TestCase):
+class TestModelService(TestCase):
+    def test_model_service(self):
+        make_service = MakeService()
+        model_service = ModelService()
+
+        make = make_service.create("Dacia")
+        data = {"name": "Dacia Duster", "make": make}
+        model = model_service.create(**data)
+
+        self.assertEqual(model.name, "Dacia Duster")
+
+
+class TestSubModelService(TestCase):
     def setUp(self):
-        self.make_service = MakeService(name="Test Make Service")
+        make_service = MakeService()
+        model_service = ModelService()
 
-    def test_create_make_success(self):
-        make_data = {"name": "Toyota"}
+        make = make_service.create("Dacia")
+        model_data = {"name": "Dacia Duster", "make": make}
+        model = model_service.create(**model_data)
+        self.model = model
 
-        make = self.make_service.create(**make_data)
+    def test_sub_model_service(self):
+        self.setUp()
+        sub_model_service = SubModelService()
 
-        assert make.name == make_data["name"]
-        assert Make.objects.count() == 1
+        sub_model_data = {"name": "dacia-gen-01", "model": self.model}
+        sub_model = sub_model_service.create(**sub_model_data)
+        self.assertEqual(sub_model.name, "dacia-gen-01")
 
-    def test_create_make_without_name(self):
-        make_data = {}
 
-        with pytest.raises(ValidationError):
-            self.make_service.create(**make_data)
+class TestCarService(TestCase):
+    def setUp(self):
+        make_service = MakeService()
+        model_service = ModelService()
+        sub_model_service = SubModelService()
+
+        make = make_service.create("Dacia")
+        model_data = {"name": "Dacia Duster", "make": make}
+        model = model_service.create(**model_data)
+        sub_model_data = {"name": "dacia-gen-01", "model": model}
+        sub_model = sub_model_service.create(**sub_model_data)
+        print(make, model, sub_model)
+        self.model = model
+        self.sub_model = sub_model
+        self.make = make
+
+    def test_car_service(self):
+        self.setUp()
+        car_service = CarService()
+        car_data = {
+            "name": "Dacia Logan",
+            "make": self.make,
+            "year": "2020",
+            "color": "#ffff",
+            "category": "Luxury",
+            "engine_type": "Fuel",
+            "seats": 4,
+            "transmission": "manual",
+            "top_speed": 120,
+            "model": self.model,
+            "sub_model": self.sub_model,
+        }
+        car = car_service.create(**car_data)
+        self.assertEqual(car.name, "Dacia Logan")

@@ -11,15 +11,16 @@ class BaseModel(models.Model):
 
 
 class Make(BaseModel):
-    name = models.CharField()
+    name = models.CharField(unique=True)
 
 
 class Model(BaseModel):
-    name = models.CharField(name="Model")
+    name = models.CharField(name="name", unique=True)
     make = models.ForeignKey(Make, on_delete=models.CASCADE, related_name="models")
 
+
 class SubModel(BaseModel):
-    name = models.CharField(name="Sub Model")
+    name = models.CharField(name="name", unique=True)
     model = models.ForeignKey(
         Model, on_delete=models.CASCADE, related_name="sub_models"
     )
@@ -35,6 +36,7 @@ class Car(BaseModel):
     seats = models.IntegerField(default=0)
     transmission = models.CharField()
     top_speed = models.IntegerField(default=0)
+    model = models.ForeignKey(Model, on_delete=models.CASCADE, related_name="models")
     sub_model = models.ForeignKey(
         SubModel, on_delete=models.CASCADE, related_name="cars"
     )
