@@ -15,7 +15,9 @@ load_dotenv(dotenv_path=Path("../.env"))
 
 
 class Scraper:
-    def __init__(self,) -> None:
+    def __init__(
+        self,
+    ) -> None:
         self.service = Service()
 
     def browser_configuration(self) -> None:
@@ -78,7 +80,7 @@ class Scraper:
             self.scrap_car_sub_models(filtered_models_by_year, make_id)
             sleep(0.05)
 
-    def scrap_car_sub_models(self, models: List[str], make_id:str) -> None:
+    def scrap_car_sub_models(self, models: List[str], make_id: str) -> None:
         """
         Scrapes available sub-models for each car model.
 
@@ -117,9 +119,7 @@ class Scraper:
                 }
                 self.scrap_car(sub_model, car_data)
 
-    def scrap_car(
-        self, sub_model: Dict[str, str], car_data: Dict[str, Any]
-    ) -> None:
+    def scrap_car(self, sub_model: Dict[str, str], car_data: Dict[str, Any]) -> None:
         self.main_frame.select_option("#c", sub_model["value"])
         form = self.main_frame.locator("//form[@name='search_params1']")
         form.locator('input[type="submit"]').click()
@@ -146,8 +146,8 @@ class Scraper:
                 car_scraper = ScrapCars(full_url, form_data)
                 car_scrapped: Car = car_scraper.scrap()
                 data = car_scrapped.__dict__ | car_data
-                data['top_speed'] = 0
-                data['year'] = year
+                data["top_speed"] = 0
+                data["year"] = year
                 self.service.create_car(**data)
 
     def start_scrap(self) -> None:
@@ -167,4 +167,5 @@ class Scraper:
 
 
 if __name__ == "__main__":
-    scrapper.start_scrap()
+    scraper = Scraper()
+    scraper.start_scrap()
