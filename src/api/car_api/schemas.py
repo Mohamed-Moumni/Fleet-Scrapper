@@ -32,8 +32,8 @@ class CarSchema(BasePydanticModel):
     color: str
     category: str
     engine_type: str
-    seats: int = 0
+    seats: Optional[int] = 0
     transmission: str
-    top_speed: int = 0
+    top_speed: Optional[int] = 0
     model_id: int
     sub_model_id: int

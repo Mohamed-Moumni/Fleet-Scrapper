@@ -45,6 +45,7 @@ def model_create_api(request):
 
 @api_view(["POST"])
 def submodel_create_api(request):
+    print("Submodel -- hello")
     try:
         data = SubModelSchema(**request.data)
         submodel: SubModel = SubModelService.create(**data.dict())

@@ -56,9 +56,8 @@ class ScrapCars:
     def get_specification_table(self) -> None:
         tree = parser.HTMLParser(self.response)
         table = tree.tags(name="table")[0]
-        trs = table.css("tr")
-        first_tr = trs[0]
-        third_d = first_tr.css("td:nth-child(3)")[0]
+        first_tr = table.css_first("tr")
+        third_d = first_tr.css_first("td:nth-child(3)")
         tables = third_d.css("td > table")
         self.specification_table = tables[3]
 

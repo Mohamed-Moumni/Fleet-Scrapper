@@ -49,9 +49,9 @@ class SubModelService:
         new_sub_model = SubModel.objects.filter(name=kwargs.get("name")).first()
 
         if new_sub_model is None:
-            sub_model_id = kwargs.get("sub_model_id")
-            if not SubModel.objects.filter(id=int(sub_model_id)).exists():
-                raise ValueError(f"Make with id {sub_model_id} does not exist.")
+            model_id = kwargs.get("model_id")
+            if not Model.objects.filter(id=int(model_id)).exists():
+                raise ValueError(f"Model with id {model_id} does not exist.")
 
             new_sub_model = SubModel.objects.create(**kwargs)
         return new_sub_model
