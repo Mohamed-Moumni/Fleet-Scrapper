@@ -123,9 +123,7 @@ class Scraper:
         self.main_frame.select_option("#c", sub_model["value"])
         form = self.main_frame.locator("//form[@name='search_params1']")
         form.locator('input[type="submit"]').click()
-
         sleep(2)
-
         html_frame = self.car_frame.inner_html("html")
         soup = BeautifulSoup(str(html_frame), "html.parser")
         trs = soup.find_all("tr")
@@ -144,11 +142,14 @@ class Scraper:
                 base_url = getenv("SITE_SCRAPER")
                 full_url = base_url + action_url
                 car_scraper = ScrapCars(full_url, form_data)
-                car_scrapped: Car = car_scraper.scrap()
-                data = car_scrapped.__dict__ | car_data
-                data["top_speed"] = 0
-                data["year"] = year
-                self.service.create_car(**data)
+                try:
+                    car_scrapped: Car = car_scraper.scrap()
+                    data = car_scrapped.__dict__ | car_data
+                    data["top_speed"] = 0
+                    data["year"] = year
+                    self.service.create_car(**data)
+                except Exception as e:
+                    print(f"Error while scrapping car information {e}")
 
     def start_scrap(self) -> None:
         """
