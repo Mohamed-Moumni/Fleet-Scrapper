@@ -3,14 +3,31 @@ from tabulate import tabulate
 import sys
 import os
 import json
+import csv
+import uuid
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-EXPORT_FOLDER = os.path.join(os.getcwd(), "data_export")
 from scraper.services import Service
+
+HEADERS = [
+    "id",
+    "name",
+    "make",
+    "sub_model",
+    "model",
+    "year",
+    "color",
+    "category",
+    "engine_type",
+    "seats",
+    "transmission",
+    "top_speed",
+]
+
+EXPORT_FOLDER = os.path.join(os.getcwd(), "data_export")
 
 
 def show_data(data, headers, tablefmt="grid"):
-    print(data)
     print(tabulate(data, headers, tablefmt))
 
 
@@ -68,21 +85,7 @@ def search_car_cmd(make: str, model: str, sub_model: str, category: str):
     """Search for a car"""
     cars = fetch_data(make, model, sub_model, category)
     cars = format_data_for_output(cars)
-    headers = [
-        "id",
-        "name",
-        "make",
-        "sub_model",
-        "model",
-        "year",
-        "color",
-        "category",
-        "engine_type",
-        "seats",
-        "transmission",
-        "top_speed",
-    ]
-    show_data(cars, headers)
+    show_data(cars, HEADERS)
 
 
 def format_data_for_output(data):
@@ -145,12 +148,24 @@ def extract_data(extract: str, make: str, model: str, sub_model: str, category: 
         print("Invalid Error you Must Enter one of the Following Values: (json, csv)")
     elif extract == "json":
         cars = fetch_data(make, model, sub_model, category)
-        file_name = os.path.join(EXPORT_FOLDER, "car_data.json")
+        file_name = os.path.join(EXPORT_FOLDER, str(f"car_data_{uuid.uuid4()}.json"))
         with open(file_name, "w") as file:
             json.dump(cars, file, indent=4)
-        print(f"Json File format is Successfully Exported '{file_name}'")
+        print(
+            f"Json File format is Successfully Exported checkout it here '{file_name}'"
+        )
     else:
-        pass
+        cars = fetch_data(make, model, sub_model, category)
+        file_name = os.path.join(EXPORT_FOLDER, str(f"car_data_{uuid.uuid4()}.csv"))
+        with open(file_name, "w") as file:
+            writer = csv.DictWriter(
+                file, fieldnames=HEADERS + ["created_at", "updated_at"]
+            )
+            writer.writeheader()
+            writer.writerows(cars)
+        print(
+            f"CSV File format is Successfully Exported checkout it here '{file_name}'"
+        )
 
 
 main_group.add_command(search_car_cmd)
