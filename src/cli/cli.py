@@ -1,5 +1,16 @@
 import click
-import requests
+from tabulate import tabulate
+import sys
+import os
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from scraper.services import Service
+
+
+def show_data(data, headers, tablefmt="grid"):
+    print(data)
+    print(tabulate(data, headers, tablefmt))
 
 
 @click.group()
@@ -12,21 +23,80 @@ def main_group():
 @click.option(
     "--make",
     prompt="Enter the make you are searching for",
+    default="",
+    show_default=False,
     help="The make you are searching for",
 )
 @click.option(
     "--model",
     prompt="Enter the model you are searching for",
+    default="",
+    show_default=False,
     help="The model you are searching for",
 )
 @click.option(
     "--sub-model",
     prompt="Enter the sub-model you are searching for",
+    default="",
+    show_default=False,
     help="The Sub-model you are searching for",
 )
-def search_car_cmd(make: str, model: str, sub_model: str):
+@click.option(
+    "--category",
+    prompt="Enter the category you are searching for",
+    default="",
+    show_default=False,
+    help="The Category you are searching for",
+)
+def search_car_cmd(make: str, model: str, sub_model: str, category: str):
     """Search for a car"""
-    click.echo(f"Searching for {make} {model} {sub_model}...")
+    service = Service()
+    params = {}
+    if make:
+        params["make"] = make
+    if model:
+        params["model"] = model
+    if sub_model:
+        params["sub_mode"] = sub_model
+    if category:
+        params["category"] = category
+    cars = service.get_car_spec(**params)
+    cars = format_data_for_output(cars)
+    headers = [
+        "id",
+        "name",
+        "make",
+        "sub_model",
+        "model",
+        "year",
+        "color",
+        "category",
+        "engine_type",
+        "seats",
+        "transmission",
+        "top_speed",
+    ]
+    show_data(cars, headers)
+
+
+def format_data_for_output(data):
+    return [
+        [
+            item["id"],
+            item["name"],
+            item["make"],
+            item["sub_model"],
+            item["model"],
+            item["year"],
+            item["color"],
+            item["category"],
+            item["engine_type"],
+            item["seats"],
+            item["transmission"],
+            item["top_speed"],
+        ]
+        for item in data
+    ]
 
 
 @click.command(name="extract")

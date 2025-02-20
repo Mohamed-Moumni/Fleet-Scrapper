@@ -84,5 +84,6 @@ class CarService:
             raise ValueError(f"An error occurred while creating the car. {e}")
 
     def get_by_filter(self, **filters):
+        print(filters)
         cars_filtered: List[Car] = Car.objects.filter(**filters)
         return cars_filtered
