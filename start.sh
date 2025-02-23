@@ -8,6 +8,9 @@ docker-compose exec web python manage.py migrate
 
 cd src/scraper/
 
+#install Playwright
+playwright install
+
 # run scraper
 python scraper.py
 
