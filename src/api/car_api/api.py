@@ -1,5 +1,8 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework import status
 from .services import MakeService, CarService, ModelService, SubModelService
 from .schemas import MakeSchema, ModelSchema, SubModelSchema, CarSchema
@@ -11,6 +14,9 @@ import json
 
 # create make
 
+
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 @api_view(["POST"])
 def make_create_api(request):
     try:
@@ -25,9 +31,12 @@ def make_create_api(request):
         )
     except ValidationError as e:
         return Response({"errors": e.errors()}, status=status.HTTP_400_BAD_REQUEST)
-    
+
+
 # create model
 
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 @api_view(["POST"])
 def model_create_api(request):
     try:
@@ -45,6 +54,8 @@ def model_create_api(request):
 
 # create sub_model
 
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 @api_view(["POST"])
 def submodel_create_api(request):
     print("Submodel -- hello")
@@ -60,8 +71,11 @@ def submodel_create_api(request):
     except ValidationError as e:
         return Response({"errors": e.errors()}, status=status.HTTP_400_BAD_REQUEST)
 
+
 # create car
 
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 @api_view(["POST"])
 def car_create_api(request):
     try:
@@ -72,11 +86,12 @@ def car_create_api(request):
                 "message": "Car created successfully",
                 "data": json.dumps({"name": car.name, "id": car.id}),
             }
-        ) 
+        )
     except ValidationError as e:
         return Response({"errors": e.errors()}, status=status.HTTP_400_BAD_REQUEST)
 
-
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 @api_view(["GET"])
 def car_get_api(request):
     filters = {}
