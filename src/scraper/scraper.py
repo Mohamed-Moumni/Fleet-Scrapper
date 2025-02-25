@@ -159,7 +159,6 @@ class Scraper:
                 try:
                     car_scrapped: Car = car_scraper.scrap()
                     data = car_scrapped.__dict__ | car_data
-                    data["top_speed"] = 0
                     data["year"] = year
                     self.service.create_car(**data)
                 except Exception as e:

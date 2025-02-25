@@ -9,6 +9,7 @@ from .serializers import CarSerializer
 import json
 
 
+# create make
 
 @api_view(["POST"])
 def make_create_api(request):
@@ -24,7 +25,8 @@ def make_create_api(request):
         )
     except ValidationError as e:
         return Response({"errors": e.errors()}, status=status.HTTP_400_BAD_REQUEST)
-
+    
+# create model
 
 @api_view(["POST"])
 def model_create_api(request):

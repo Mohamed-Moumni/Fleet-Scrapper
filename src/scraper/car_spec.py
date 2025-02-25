@@ -4,6 +4,7 @@ from selectolax import parser
 from dotenv import load_dotenv
 from pathlib import Path
 from os import getenv
+import re
 
 load_dotenv(dotenv_path=Path("../.env"))
 
@@ -112,12 +113,22 @@ class ScrapCars:
             raise ValueError(f"Error occur while getting Car specification: {e}")
 
     def get_car_spec_information(self, trs_to_process, car_information):
+        # for tr in trs_to_process:
+            # print("TR --------------------------------------- | ")
+            # print(tr.html)
         for tr in trs_to_process:
             try:
                 label = (
                     tr.css_first("th > p > font").text(strip=True).rstrip(":").lower()
                 )
-                value = tr.css_first("td > p > font").text(strip=True).rstrip(":")
-                car_information[label] = value
+                
+                if "speed" in label.lower():
+                    value = tr.css_first("td > p > font").text(strip=True).rstrip(":")
+                    if not car_information.get("top speed"):
+                        match = re.search(r'\d+', value)
+                        car_information["top speed"] = int(match.group(0)) if match else 0
+                else:
+                    value = tr.css_first("td > p > table > tbody > td > p > font > b").text(strip=True)
+                    car_information[label] = value
             except Exception as e:
                 pass
