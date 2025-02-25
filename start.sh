@@ -4,7 +4,7 @@
 docker compose up --build -d
 
 # run the migrations
-docker-compose exec web python manage.py migrate
+docker compose exec web python manage.py migrate
 
 cd src/scraper/
 
