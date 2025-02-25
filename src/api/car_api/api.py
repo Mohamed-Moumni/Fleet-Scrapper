@@ -79,13 +79,13 @@ def car_create_api(request):
 def car_get_api(request):
     filters = {}
     if "make" in request.GET:
-        filters["make__name__iexact"] = request.GET["make"]
+        filters["make__name"] = request.GET["make"]
     if "model" in request.GET:
-        filters["model__name__iexact"] = request.GET["model"]
+        filters["model__name"] = request.GET["model"]
     if "sub_model" in request.GET:
-        filters["sub_model__name__iexact"] = request.GET["sub_model"]
+        filters["sub_model__name"] = request.GET["sub_model"]
     if "category" in request.GET:
-        filters["category__iexact"] = request.GET["category"]
+        filters["car__category"] = request.GET["category"]
     car_service = CarService()
     cars = car_service.get_by_filter(**filters)
     serializer = CarSerializer(cars, many=True)
