@@ -1,16 +1,26 @@
-from playwright.sync_api import sync_playwright, Frame, Page
+from playwright.sync_api import sync_playwright
 from helpers import dump_frame_tree, filter_models
 from dotenv import load_dotenv
 from pathlib import Path
 from bs4 import BeautifulSoup
 from os import getenv
 from typing import List, Dict, Any
-from tqdm import tqdm
 from itertools import islice
 from time import sleep
 from car_spec import ScrapCars, Car
 from services import Service
+import logging
 
+logger = logging.getLogger("Fleet Scraper")
+logger.setLevel(logging.DEBUG)
+
+handler = logging.StreamHandler()
+handler.setLevel(logging.DEBUG)
+
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+
+logger.addHandler(handler)
 load_dotenv(dotenv_path=Path("../.env"))
 
 
@@ -30,7 +40,7 @@ class Scraper:
         """
         self.browser = self.playwright.firefox.launch()
         self.page = self.browser.new_page()
-        print("\033[32mGo To The Website\033[0m")
+        logger.info("\033[32m Go To The Web site \033[0m")
         self.page.goto(getenv("SITE_SCRAPER"), wait_until="load", timeout=120000)
 
     def get_main_frame(self) -> None:
@@ -43,7 +53,7 @@ class Scraper:
         """
         Extracts all available makes, excluding the first default option.
         """
-        print("\033[32mStart Scraping Cars Makes\n\033[0m")
+        logger.info("\033[32m Start Scraping Cars Makes \033[0m")
         while self.main_frame.locator("#a > option:not([value='1'])").count() == 0:
             self.page.wait_for_timeout(500)
 
@@ -64,8 +74,9 @@ class Scraper:
         Args:
             makes (List[Dict[str, str]]): A list of car makes with their values.
         """
-        for make, _ in zip(makes, tqdm(range(len(makes)), desc="Makes Treated")):
-            make_id = self.service.create_make(make["value"].lower().split(':')[1])
+        for make in makes:
+            logger.info(f"\033[32m Scraping Make: {make} \033[0m")
+            make_id = self.service.create_make(make["value"].lower().split(":")[1])
             self.main_frame.select_option("#a", make["value"])
             while self.main_frame.locator("#b > option:not([value='1'])").count() == 0:
                 self.page.wait_for_timeout(500)
@@ -94,7 +105,8 @@ class Scraper:
 
         self.get_model_cars_frame()
         for model in models:
-            data = {"name": model.lower().split(':')[1], "make_id": make_id}
+            logger.info(f"\033[32m Scraping Model: {model} \033[0m")
+            data = {"name": model.lower().split(":")[1], "make_id": make_id}
             model_id = self.service.create_model(**data)
             self.main_frame.select_option("#b", model)
             while self.main_frame.locator("#c > option:not([value='1'])").count() == 0:
@@ -109,6 +121,7 @@ class Scraper:
                     }))"""
             )
             sub_models.pop(0)
+            logger.info(f"\033[32m Scraping SubModels of Model: {model} \033[0m")
             for sub_model in sub_models:
                 data = {"name": sub_model["value"].lower(), "model_id": model_id}
                 sub_model_id = self.service.create_submodel(**data)

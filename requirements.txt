@@ -24,7 +24,6 @@ selectolax==0.3.27
 soupsieve==2.6
 SQLAlchemy==2.0.38
 sqlparse==0.5.3
-tqdm==4.67.1
 typing_extensions==4.12.2
 tzdata==2025.1
 urllib3==2.3.0
