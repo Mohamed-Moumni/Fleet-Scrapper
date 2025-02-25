@@ -48,7 +48,7 @@ class Scraper:
             self.page.wait_for_timeout(500)
 
         makes = self.main_frame.locator("#a option:not([value='1'])").evaluate_all(
-            """elements => elements.map(element => ({value:element.value}))"""
+            """elements => elements.map(element => ({ value:element.value }))"""
         )
         makes.pop(0)
         return makes
@@ -65,7 +65,7 @@ class Scraper:
             makes (List[Dict[str, str]]): A list of car makes with their values.
         """
         for make, _ in zip(makes, tqdm(range(len(makes)), desc="Makes Treated")):
-            make_id = self.service.create_make(make["value"].lower())
+            make_id = self.service.create_make(make["value"].lower().split(':')[1])
             self.main_frame.select_option("#a", make["value"])
             while self.main_frame.locator("#b > option:not([value='1'])").count() == 0:
                 self.page.wait_for_timeout(500)
@@ -78,7 +78,7 @@ class Scraper:
             models.pop(0)
             filtered_models_by_year: List[str] = filter_models(models)
             self.scrap_car_sub_models(filtered_models_by_year, make_id)
-            sleep(0.05)
+            sleep(1)
 
     def scrap_car_sub_models(self, models: List[str], make_id: str) -> None:
         """
@@ -94,7 +94,7 @@ class Scraper:
 
         self.get_model_cars_frame()
         for model in models:
-            data = {"name": model.lower(), "make_id": make_id}
+            data = {"name": model.lower().split(':')[1], "make_id": make_id}
             model_id = self.service.create_model(**data)
             self.main_frame.select_option("#b", model)
             while self.main_frame.locator("#c > option:not([value='1'])").count() == 0:
@@ -118,6 +118,7 @@ class Scraper:
                     "sub_model_id": sub_model_id,
                 }
                 self.scrap_car(sub_model, car_data)
+                sleep(2)
 
     def scrap_car(self, sub_model: Dict[str, str], car_data: Dict[str, Any]) -> None:
         self.main_frame.select_option("#c", sub_model["value"])
@@ -150,6 +151,7 @@ class Scraper:
                     self.service.create_car(**data)
                 except Exception as e:
                     print(f"Error while scrapping car information {e}")
+                sleep(2)
 
     def start_scrap(self) -> None:
         """
@@ -163,6 +165,8 @@ class Scraper:
             self.playwright = playwright
             self.browser_configuration()
             self.get_main_frame()
+            if not self.main_frame:
+                raise SystemError("The Main Frame is not Generated")
             makes: Dict[str, str] = self.scrap_cars_make()
             self.scrap_car_models(makes=makes)
 
