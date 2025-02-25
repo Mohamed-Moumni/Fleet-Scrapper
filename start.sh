@@ -12,5 +12,4 @@ cd src/scraper/
 playwright install
 
 # run scraper
-python ./src/scraper/scraper.py
-
+python scraper.py
